@@ -1,0 +1,7 @@
+Changes
+Makefile.PL
+MANIFEST
+lib/Math/Quaternion.pm
+README
+t/001_basic.t
+t/002_overloading.t
