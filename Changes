@@ -4,3 +4,6 @@ Revision history for Perl extension Quaternion.
 	- original version; created by h2xs 1.22 with options
 		-XAn Quaternion
 
+0.02 Sat Jul 10 17:22:47 BST 2004
+        - some small markup fixes in the POD
+
