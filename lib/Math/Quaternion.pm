@@ -67,7 +67,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 
 # Preloaded methods go here.
@@ -367,8 +367,8 @@ part, or else 0.
 
  my $q1 = Math::Quaternion->new(1,2,3,4);
  my $q2 = Math::Quaternion->new(5,0,0,0);
- print $q1->isreal; # 1;
- print $q2->isreal; # 0;
+ print $q1->isreal; # 0;
+ print $q2->isreal; # 1;
 
 =cut
 

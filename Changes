@@ -7,3 +7,7 @@ Revision history for Perl extension Quaternion.
 0.02 Sat Jul 10 17:22:47 BST 2004
         - some small markup fixes in the POD
 
+0.03 Mon  5 May 00:41:56 BST 2008
+        - fixed a bug in the documentation pointed out by Andreas Lund
+        - fixed a warning during 001_basic.t
+

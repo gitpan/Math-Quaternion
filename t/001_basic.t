@@ -339,7 +339,7 @@ ok(!defined( eval { Math::Quaternion::rotation(23,"skidoo",3,4,5); 1; }),
 	"Math::Quaternion::rotation(much rubbish) fails");
 
 my @vec = ($ax,$ay,$az);
-my $rq2 = Math::Quaternion::rotation($theta,\@vec);
+$rq2 = Math::Quaternion::rotation($theta,\@vec);
 ok(quatequal_fuzz($rotquat,$rq2),"Math::Quaternion::rotation(\$theta,\\\@vec) works");
 $rq2 = Math::Quaternion::rotation(\@vec,$theta);
 ok(quatequal_fuzz($rotquat,$rq2),"Math::Quaternion::rotation(\\\@vec,\$theta) works");
