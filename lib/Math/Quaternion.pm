@@ -67,7 +67,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 
 # Preloaded methods go here.
@@ -128,7 +128,7 @@ quaternion which represents no rotation:
 You can make a quaternion which represents a rotation of a given
 angle (in radians) about a given axis:
 
-   $qrot = Math::Quaternion->new({ axis => 0.1, angle => [ 2,3,4]});
+   $qrot = Math::Quaternion->new({ angle => 0.1, axis => [ 2,3,4]});
 
 Say you have two rotations, $q1 and $q2, and you want to make a
 quaternion representing a rotation of $q1 followed by $q2. Then, you
@@ -640,58 +640,121 @@ rotates the first vector onto the second.
 =cut
 
 sub rotation {
-	my ($theta,$x,$y,$z);
-	if (2==@_) {
+    my ($theta,$x,$y,$z);
+    if (2==@_) {
 		if (ref($_[0])) {
 			if (ref($_[1])) {
 				# Both args references to vectors
 				my ($ax,$ay,$az)=@{$_[0]};
 				my ($bx,$by,$bz)=@{$_[1]};
-				# Find cross product. This is a vector
-				# perpendicular to both argument vectors,
-				# and is therefore the axis of rotation.
+
+                if ( (($ax == 0) and ($ay == 0) and ($az == 0)) or
+                     (($bx == 0) and ($by == 0) and ($bz == 0)) ) {
+                       croak("Math::Quaternion::rotation() passed zero-length vector");
+                }
+
+                # Find cross product. This is a vector perpendicular to both
+                # argument vectors, and is therefore the axis of rotation.
+
 				$x = $ay*$bz-$az*$by;
 				$y = $az*$bx-$ax*$bz;
 				$z = $ax*$by-$ay*$bx;
+
 				# find the dot product.
+
 				my $dotprod = $ax*$bx+$ay*$by+$az*$bz;
 				my $mod1 = sqrt($ax*$ax+$ay*$ay+$az*$az);
 				my $mod2 = sqrt($bx*$bx+$by*$by+$bz*$bz);
+
 				# Find the angle of rotation.
 				$theta=Math::Trig::acos($dotprod/($mod1*$mod2));
-			} else {
-				# 0 is a ref, 1 is not.
-				$theta = $_[1];
-				($x,$y,$z)=@{$_[0]};
-			}
-		} else {
-			if (ref($_[1])) {
-				# 1 is a ref, 0 is not
-				$theta = $_[0];
-				($x,$y,$z)=@{$_[1]};
-			} else {
-			 croak("Math::Quaternion::rotation() passed 2 nonref args");
-			}
+                           
+                # Check for parallel vectors (cross product is zero)
 
-		}
-		
-	} elsif (4==@_) {
-		($theta,$x,$y,$z) = @_;
-	} else {
-		croak("Math::Quaternion::rotation() passed wrong no of arguments");
+                if (($x == 0) and ($y == 0) and ($z == 0)) {
+
+                    # Vectors a and b are parallel, such that rotation vector
+                    # is the zero-length vector (0,0,0), with theta 0.  To
+                    # remove round-off errors in theta, set it to 0
+
+                    $theta = 0;
+
+                    # Such a zero-length rotation vector is annoying (e.g.
+                    # division by 0 on normalization, and problems combining
+                    # rotations) Simple solution would be to set a random
+                    # rotation vector (e.g. 1,0,0) to go with the zero rotation
+                    # angle. This would satisfy as a quaternion that rotates
+                    # the first vector on the second, by a zero degree
+                    # rotation.
+                    #
+                    # A more elegant solution is to select a random rotation
+                    # vector that is also perpendicular to both parallel
+                    # vectors a and b. This satisfies the rotation requirement,
+                    # and helps programs relying on the logic that the rotation
+                    # vector has to be perpendicular to both vectors given
+                    # (even if there are an infinite amount of rotation vectors
+                    # that would satisfy that condition).  Algorithm: Find a
+                    # random vector b at any non-zero angle to vector a. One of
+                    # the main axis will do. To reduce round-off errors, make b
+                    # as perpendicular as possible to a by selecting one of the
+                    # smallest components of vector a as the main component of
+                    # b. This also avoid accidentally selecting a vector
+                    # parallel to a
+
+                    if ( (abs($ax) <= abs($ay)) and (abs($ax) <= abs($az)) ) {
+                             ($bx,$by,$bz)=(1,0,0);
+                    } elsif ( (abs($ay) <= abs($ax)) and (abs($ay) <= abs($az)) ) {
+                             ($bx,$by,$bz)=(0,1,0);
+                    } else {
+                             ($bx,$by,$bz)=(0,0,1);
+                    }
+
+                    # Then, take the cross product between vector a and the new
+                    # vector b, to generate some vector exactly perpendicular
+                    # to vector a and hence also perpendicular to the original
+                    # vector b (i.e. @{$_[1]}) 
+
+                    $x = $ay*$bz-$az*$by;
+                    $y = $az*$bx-$ax*$bz;
+                    $z = $ax*$by-$ay*$bx;
+
+                    # ($x,$y,$z) is now a random yet valid rotation vector
+                    # perpendicular to the two original vectors. theta is still
+                    # 0.
+
+                }
+            } else {
+                # 0 is a ref, 1 is not.
+                $theta = $_[1]; ($x,$y,$z)=@{$_[0]};
+            }
+        } else {
+            if (ref($_[1])) {
+                # 1 is a ref, 0 is not
+                $theta = $_[0]; ($x,$y,$z)=@{$_[1]};
+            } else {
+                croak("Math::Quaternion::rotation() passed 2 nonref args");
+            }
 	}
+    } elsif (4==@_) {
+        ($theta,$x,$y,$z) = @_;
+    } else {
+        croak("Math::Quaternion::rotation() passed wrong no of arguments");
+    }
 
-	my $modulus = sqrt($x*$x+$y*$y+$z*$z); # Make it a unit vector
-	$x /= $modulus;
-	$y /= $modulus;
-	$z /= $modulus;
+    my $modulus = sqrt($x*$x+$y*$y+$z*$z); # Make it a unit vector
+    if ($modulus == 0) {
+         croak("Math::Quaternion::rotation() passed zero-length rotation vector");
+    }
+    $x /= $modulus;
+    $y /= $modulus;
+    $z /= $modulus;
 
-	my $st = sin(0.5 * $theta);
-	my $ct = cos(0.5 * $theta);
+    my $st = sin(0.5 * $theta);
+    my $ct = cos(0.5 * $theta);
 
-	return Math::Quaternion->new(
-		$ct, $x * $st, $y * $st, $z * $st
-	);
+    return Math::Quaternion->new(
+        $ct, $x * $st, $y * $st, $z * $st
+    );
 }
 
 =item B<rotation_angle>
@@ -1029,7 +1092,8 @@ Jonathan Chin, E<lt>jon-quaternion.pm@earth.liE<gt>
 
 =head1 ACKNOWLEDGEMENTS
 
-Thanks to Rene Uittenbogaard for useful suggestions.
+Thanks to Rene Uittenbogaard and Daniel Connelly for useful suggestions, and
+Luc Vereecken for fixing an issue with creation from parallel vectors.
 
 =head1 SEE ALSO
 

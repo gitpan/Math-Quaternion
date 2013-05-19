@@ -1,4 +1,4 @@
-use Test::More tests => 77; 
+use Test::More tests => 78; 
 use Math::Trig;
 use strict;
 use Carp;
@@ -495,5 +495,9 @@ ok( Math::Quaternion::stringify($squat) eq "( 0 1 2 3 )",
  ok( equal_fuzz(0.3125*pi,$interp->rotation_angle),
  	"Math::Quaternion::slerp() gives correct angle for -ve dp");
 
-
 }
+my $uq = Math::Quaternion->new({v1 => [ 1,1,1],
+                       v2 => [ 2,2,2],
+                     });
+ok( checkquat($uq,1,0,0,0),
+    "Creating Quaternion from two parallel vectors does not crash");
