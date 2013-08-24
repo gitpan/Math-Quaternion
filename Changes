@@ -11,3 +11,17 @@ Revision history for Perl extension Quaternion.
         - fixed a bug in the documentation pointed out by Andreas Lund
         - fixed a warning during 001_basic.t
 
+0.04 Sun May 19 00:05:56 BST 2013
+    - Added code and tests to fix crashing when creating quaternion from
+      two parallel vectors (i.e. cross product is zero).
+    - Added guard code against zero-length rotation vectors.
+    - Added new fields to META.yml; fixed or removed old fields.
+    - Added thanks to Daniel Connelly and Luc Vereecken.
+    - Fixed POD of method new() - axis and angle were swapped.
+
+0.05 Sat Aug 24 12:27:43 BST 2013
+    - Merged Bruce Gray's patch for exponentiation
+
+0.06 Sat Aug 24 12:40:20 BST 2013
+    - Updated Changelog!
+

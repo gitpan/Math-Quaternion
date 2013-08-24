@@ -1,6 +1,6 @@
 --- #YAML:1.0
 name:               Math-Quaternion
-version:            0.05
+version:            0.06
 abstract:           Perl class to represent quaternions
 author:
     - Jonathan Chin <jon-quaternion.pm@earth.li>
