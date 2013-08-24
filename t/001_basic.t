@@ -1,4 +1,4 @@
-use Test::More tests => 78; 
+use Test::More tests => 82;
 use Math::Trig;
 use strict;
 use Carp;
@@ -236,6 +236,17 @@ ok( equal_fuzz($q1expon->modulus,($q1->modulus)**$exponent),
 ok( quatequal_fuzz($q1i,Math::Quaternion::power($q1,-1)),
 	"Quaternion raised to (-1)th power is inverse");
 
+{
+    # RT#86098
+    my $q = Math::Quaternion->new( -9, 0, 0, 0 );
+    ok( $q->isreal, 'A quaternion (which ->isreal)');
+    my $q_q   = $q * $q;
+    my $q_2   = eval { $q->power(2); };
+    my $lived = !$@;
+    ok( checkquat($q_q, 81,0,0,0), "...can be multiplied by its self,");
+    ok( checkquat($q_2, 81,0,0,0), "...and can be raised to the power of 2");
+    ok( $lived,                    "...without dying.");
+}
 
 # Check exponentiation
 

@@ -67,7 +67,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 
 
 # Preloaded methods go here.
@@ -514,6 +514,11 @@ sub power {
 	if (ref $b) {
 		# For quaternion^quaternion, use exp and log.
 		return Math::Quaternion::exp(Math::Quaternion::multiply($b,Math::Quaternion::log($a)));
+	}
+
+	# For real_quaternion^real_number, use built-in power.
+	if ($a->isreal) {
+		return Math::Quaternion->new( $a->[0] ** $b, 0, 0, 0 ) ;
 	}
 
 	# For quat raised to a scalar power, do it manually.
@@ -1093,7 +1098,7 @@ Jonathan Chin, E<lt>jon-quaternion.pm@earth.liE<gt>
 =head1 ACKNOWLEDGEMENTS
 
 Thanks to Rene Uittenbogaard and Daniel Connelly for useful suggestions, and
-Luc Vereecken for fixing an issue with creation from parallel vectors.
+Luc Vereecken and Bruce Gray for patches.
 
 =head1 SEE ALSO
 
