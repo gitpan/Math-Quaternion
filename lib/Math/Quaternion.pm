@@ -67,7 +67,7 @@ our @EXPORT = qw(
 	
 );
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 
 # Preloaded methods go here.
@@ -678,21 +678,17 @@ sub rotation {
 
                 if (($x == 0) and ($y == 0) and ($z == 0)) {
 
-                    # Vectors a and b are parallel, such that rotation vector
-                    # is the zero-length vector (0,0,0), with theta 0.  To
-                    # remove round-off errors in theta, set it to 0
+                    # Vectors a and b are parallel, such that rotation
+                    # vector is the zero-length vector (0,0,0), with
+                    # theta either 0 or pi (if vectors are opposite).
+                    # To remove round-off errors in theta, explicitly
+                    # set it.
 
-                    $theta = 0;
+                    $theta = $dotprod > 0 ? 0 : pi;
 
                     # Such a zero-length rotation vector is annoying (e.g.
                     # division by 0 on normalization, and problems combining
-                    # rotations) Simple solution would be to set a random
-                    # rotation vector (e.g. 1,0,0) to go with the zero rotation
-                    # angle. This would satisfy as a quaternion that rotates
-                    # the first vector on the second, by a zero degree
-                    # rotation.
-                    #
-                    # A more elegant solution is to select a random rotation
+                    # rotations). To solve this, select a random rotation
                     # vector that is also perpendicular to both parallel
                     # vectors a and b. This satisfies the rotation requirement,
                     # and helps programs relying on the logic that the rotation
@@ -724,8 +720,7 @@ sub rotation {
                     $z = $ax*$by-$ay*$bx;
 
                     # ($x,$y,$z) is now a random yet valid rotation vector
-                    # perpendicular to the two original vectors. theta is still
-                    # 0.
+                    # perpendicular to the two original vectors.
 
                 }
             } else {

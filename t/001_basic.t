@@ -1,4 +1,4 @@
-use Test::More tests => 82;
+use Test::More tests => 83;
 use Math::Trig;
 use strict;
 use Carp;
@@ -52,6 +52,23 @@ sub checkquat {
 		 && equal_fuzz ($q->[1] , $nos[1])
 		 && equal_fuzz ($q->[2] , $nos[2])
 		 && equal_fuzz ($q->[3] , $nos[3])
+	) {
+		return 1;
+	} else { 
+		return undef;
+	}
+}
+
+# take two vectors as array refs; return true if they are equivalent
+sub check_vector {
+	croak("Wrong number of args") unless (2==@_);
+
+	my ($v1, $v2) = @_;
+
+	if (
+		    equal_fuzz ($v1->[0] , $v2->[0])
+		 && equal_fuzz ($v1->[1] , $v2->[1])
+		 && equal_fuzz ($v1->[2] , $v2->[2])
 	) {
 		return 1;
 	} else { 
@@ -512,3 +529,19 @@ my $uq = Math::Quaternion->new({v1 => [ 1,1,1],
                      });
 ok( checkquat($uq,1,0,0,0),
     "Creating Quaternion from two parallel vectors does not crash");
+
+
+# quaternion from parallel but opposite vectors
+{
+	my $v1 = [ 1, 0, 0 ];
+	my $v2 = [ -1, 0, 0 ];
+
+	my $q = Math::Quaternion->new({ v1 => $v1, v2 => $v2 });
+
+	my $v1_v2 = [ $q->rotate_vector( @$v1 ) ];
+
+	ok( check_vector( $v2, $v1_v2 ),
+	"Rotate opposite but parallel vectors" );
+
+
+}
